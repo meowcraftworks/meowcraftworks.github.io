@@ -116,6 +116,32 @@ function setupCanvasSize() {
    外部APIもライブラリも使わずに済む反面、背景が単色〜緩やかな
    グラデーションの写真に向く。
    ========================================================= */
+/* 四隅の小さなパッチの平均色を「背景の基準色」の候補にする。
+   被写体が四隅すべてを覆うことはまずないので、端に接した被写体を
+   背景と誤認しにくくなる。 */
+function cornerRefs(d, w, h) {
+  const p = Math.max(2, Math.round(Math.min(w, h) * 0.04));
+  const spots = [[0, 0], [w - p, 0], [0, h - p], [w - p, h - p]];
+  return spots.map(([ox, oy]) => {
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let y = oy; y < oy + p; y++) {
+      for (let x = ox; x < ox + p; x++) {
+        const i = (y * w + x) * 4;
+        r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+      }
+    }
+    return [r / n, g / n, b / n];
+  });
+}
+
+function nearRef(refs, r, g, b, tol2) {
+  for (let k = 0; k < refs.length; k++) {
+    const dr = r - refs[k][0], dg = g - refs[k][1], db = b - refs[k][2];
+    if (dr * dr + dg * dg + db * db <= tol2) return true;
+  }
+  return false;
+}
+
 function buildCutCanvas(layer, maxSize) {
   const img = layer.image;
   let w = img.naturalWidth, h = img.naturalHeight;
@@ -137,6 +163,8 @@ function buildCutCanvas(layer, maxSize) {
   const visited = new Uint8Array(n);
   const stack = new Int32Array(n);           // 各ピクセルは高々1回しか積まれない
 
+  const refs = cornerRefs(d, w, h);
+
   // 四辺のピクセルを種にする
   const seeds = [];
   for (let x = 0; x < w; x++) { seeds.push(x, (h - 1) * w + x); }
@@ -147,6 +175,9 @@ function buildCutCanvas(layer, maxSize) {
     // 連結成分ごとに種ピクセルの色を基準にする（背景が複数色でも対応できる）
     const si = seed * 4;
     const sr = d[si], sg = d[si + 1], sb = d[si + 2];
+    // 背景の基準色から外れた端のピクセル = 画面の端に接した被写体。
+    // ここから塗り始めると猫の内部へ侵入して顔まで消えるので種にしない。
+    if (!nearRef(refs, sr, sg, sb, tol2)) continue;
     let sp = 0;
     stack[sp++] = seed;
     visited[seed] = 1;
