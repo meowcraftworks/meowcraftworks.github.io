@@ -82,9 +82,30 @@
         <hr>
 
         <div class="row">
+          <span class="lbl">背景を抜く</span>
+          <label class="switch">
+            <input type="checkbox" id="cutOn" checked>
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+        <div class="row">
+          <span class="lbl">しきい値</span>
+          <input type="range" id="cutTol" min="0.02" max="0.6" step="0.01" value="0.18">
+          <output id="cutTolo">18%</output>
+        </div>
+        <div class="row">
+          <span class="lbl">縁のなじみ</span>
+          <input type="range" id="cutSoft" min="0" max="4" step="1" value="1">
+          <output id="cutSofto">1px</output>
+        </div>
+        <p class="hint">背景が単色に近い写真ほどきれいに抜けます。うまく抜けない時はしきい値を調整してください。</p>
+
+        <hr>
+
+        <div class="row">
           <span class="lbl">フェザー</span>
-          <input type="range" id="feather" min="0" max="1" step="0.01" value="0.55">
-          <output id="feathero">55%</output>
+          <input type="range" id="feather" min="0" max="1" step="0.01" value="0.35">
+          <output id="feathero">35%</output>
         </div>
         <div class="row">
           <span class="lbl">マスク中心Y</span>

@@ -153,7 +153,7 @@ select {
 .panel-disabled { opacity: .4; pointer-events: none; }
 
 .row { display: flex; align-items: center; gap: 8px; min-height: 34px; }
-.row .lbl { width: 78px; font-size: .8rem; color: var(--muted); flex-shrink: 0; }
+.row .lbl { width: 86px; font-size: .8rem; color: var(--muted); flex-shrink: 0; line-height: 1.25; }
 .row output { width: 46px; text-align: right; font-size: .78rem; color: var(--text); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .row .grow { flex: 1; }
 .row.btns { gap: 6px; margin-top: 4px; }
@@ -198,6 +198,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 8px 0; }
 .switch input:checked + .slider-sw::before { transform: translateX(18px); }
 
 .note { color: var(--muted); font-size: .72rem; text-align: center; margin: 10px 0 0; }
+.hint { color: var(--muted); font-size: .7rem; line-height: 1.5; margin: 2px 0 0; }
 
 /* ---------- サイト内ページ用 ---------- */
 .app-footer {
