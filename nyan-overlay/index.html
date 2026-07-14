@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0e0f13">
+  <title>にゃんOverlay ｜ meow.craft.works</title>
+  <meta name="description" content="背景写真に猫の顔を二重露光風に透かして合成できる無料Webアプリ。画像はブラウザ内でのみ処理され、外部に送信されません。">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google AdSense（このページのみ。自動広告: PC=サイドレール / スマホ=アンカー広告を管理画面で有効化） -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1823856600276739"
+          crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div id="app">
+  <header class="topbar">
+    <h1>にゃんOverlay</h1>
+    <p class="tagline">いつでも脳裏にキャットあり</p>
+  </header>
+
+  <main class="layout">
+    <!-- ===== 左: プレビュー ===== -->
+    <section class="stage-col">
+      <div class="loaders">
+        <label class="btn btn-file">
+          背景画像を選択
+          <input id="bgInput" type="file" accept="image/*" hidden>
+        </label>
+        <button id="addOverlayBtn" class="btn btn-accent" disabled>+ オーバーレイを追加</button>
+        <span id="layerCount" class="chip">0 / 8</span>
+      </div>
+
+      <div id="stageWrap" class="stage-wrap">
+        <canvas id="stage"></canvas>
+        <div id="dropHint" class="drop-hint">
+          <div>
+            <strong>背景画像をドロップ</strong><br>
+            またはボタンから選択してください
+          </div>
+        </div>
+      </div>
+
+      <div id="thumbs" class="thumbs"></div>
+    </section>
+
+    <!-- ===== 右: コントロール ===== -->
+    <aside class="controls">
+      <div class="control-head">
+        <label for="layerSelect">編集中レイヤー</label>
+        <select id="layerSelect"></select>
+      </div>
+
+      <div id="panel" class="panel panel-disabled">
+        <div class="row">
+          <span class="lbl">位置 X</span>
+          <input type="range" id="posX" min="0" max="1" step="0.001" value="0.5">
+          <output id="posXo">50%</output>
+        </div>
+        <div class="row">
+          <span class="lbl">位置 Y</span>
+          <input type="range" id="posY" min="0" max="1" step="0.001" value="0.4">
+          <output id="posYo">40%</output>
+        </div>
+        <div class="row">
+          <span class="lbl">拡大率</span>
+          <input type="range" id="scale" min="0.1" max="3" step="0.01" value="1">
+          <output id="scaleo">1.00x</output>
+        </div>
+        <div class="row">
+          <span class="lbl">回転</span>
+          <input type="range" id="rotation" min="-180" max="180" step="1" value="0">
+          <output id="rotationo">0°</output>
+        </div>
+        <div class="row">
+          <span class="lbl">不透明度</span>
+          <input type="range" id="opacity" min="0" max="1" step="0.01" value="0.85">
+          <output id="opacityo">85%</output>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <span class="lbl">フェザー</span>
+          <input type="range" id="feather" min="0" max="1" step="0.01" value="0.55">
+          <output id="feathero">55%</output>
+        </div>
+        <div class="row">
+          <span class="lbl">マスク中心Y</span>
+          <input type="range" id="maskCy" min="0" max="1" step="0.01" value="0.45">
+          <output id="maskCyo">45%</output>
+        </div>
+        <div class="row">
+          <span class="lbl">マスク縦横比</span>
+          <input type="range" id="maskAspect" min="0.4" max="2.2" step="0.01" value="1.25">
+          <output id="maskAspecto">1.25</output>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <span class="lbl">ブレンド</span>
+          <select id="blendMode" class="grow">
+            <option value="screen">Screen（推奨）</option>
+            <option value="lighten">Lighten</option>
+            <option value="overlay">Overlay</option>
+            <option value="soft-light">Soft Light</option>
+            <option value="source-over">Normal</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <span class="lbl">グロー</span>
+          <label class="switch">
+            <input type="checkbox" id="glowOn" checked>
+            <span class="slider-sw"></span>
+          </label>
+          <input type="range" id="glowStrength" min="0" max="1" step="0.01" value="0.3">
+          <output id="glowStrengtho">30%</output>
+        </div>
+
+        <hr>
+
+        <div class="row btns">
+          <button id="frontBtn" class="btn btn-sm">前面へ</button>
+          <button id="backBtn" class="btn btn-sm">背面へ</button>
+          <button id="deleteBtn" class="btn btn-sm btn-danger">削除</button>
+        </div>
+      </div>
+
+      <button id="downloadBtn" class="btn btn-lg btn-primary" disabled>PNGとしてダウンロード</button>
+      <p class="note">画像はブラウザ内でのみ処理され、外部に送信されません。</p>
+    </aside>
+  </main>
+
+  <footer class="app-footer">
+    <p class="copyright">© 2026 meow.craft.works</p>
+    <a href="../privacy.html">プライバシーポリシー</a>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
