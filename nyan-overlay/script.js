@@ -81,11 +81,13 @@ async function addOverlay(file) {
   const layer = {
     image: img,
     x: 0.5, y: 0.42,
-    scale: 1.0, rotation: 0, opacity: 0.85,
-    blendMode: 'screen',
-    feather: 0.35, maskCy: 0.45, maskAspect: 1.25,
+    scale: 1.0, rotation: 0, opacity: 0.9,
+    // Screen は明るくする合成なので猫が白く飛んで透けて見える。
+    // 背景を切り抜いてあるので、既定は猫本来の色が出る Normal にする。
+    blendMode: 'source-over',
+    feather: 0.15, maskCy: 0.45, maskAspect: 1.25,
     cutout: { enabled: true, tolerance: 0.18, edgeSoften: 1 },
-    glow: { enabled: true, strength: 0.3 },
+    glow: { enabled: true, strength: 0.18 },
     zIndex: layers.length,
     id: ++uid,
     _masked: null, _dirty: true, _render: null,

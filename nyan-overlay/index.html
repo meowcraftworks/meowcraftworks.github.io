@@ -75,8 +75,8 @@
         </div>
         <div class="row">
           <span class="lbl">不透明度</span>
-          <input type="range" id="opacity" min="0" max="1" step="0.01" value="0.85">
-          <output id="opacityo">85%</output>
+          <input type="range" id="opacity" min="0" max="1" step="0.01" value="0.9">
+          <output id="opacityo">90%</output>
         </div>
 
         <hr>
@@ -104,8 +104,8 @@
 
         <div class="row">
           <span class="lbl">フェザー</span>
-          <input type="range" id="feather" min="0" max="1" step="0.01" value="0.35">
-          <output id="feathero">35%</output>
+          <input type="range" id="feather" min="0" max="1" step="0.01" value="0.15">
+          <output id="feathero">15%</output>
         </div>
         <div class="row">
           <span class="lbl">マスク中心Y</span>
@@ -123,11 +123,11 @@
         <div class="row">
           <span class="lbl">ブレンド</span>
           <select id="blendMode" class="grow">
-            <option value="screen">Screen（推奨）</option>
-            <option value="lighten">Lighten</option>
+            <option value="source-over">Normal（くっきり）</option>
+            <option value="screen">Screen（透ける・二重露光風）</option>
+            <option value="lighten">Lighten（明るい所だけ）</option>
             <option value="overlay">Overlay</option>
             <option value="soft-light">Soft Light</option>
-            <option value="source-over">Normal</option>
           </select>
         </div>
 
@@ -137,8 +137,8 @@
             <input type="checkbox" id="glowOn" checked>
             <span class="slider-sw"></span>
           </label>
-          <input type="range" id="glowStrength" min="0" max="1" step="0.01" value="0.3">
-          <output id="glowStrengtho">30%</output>
+          <input type="range" id="glowStrength" min="0" max="1" step="0.01" value="0.18">
+          <output id="glowStrengtho">18%</output>
         </div>
 
         <hr>
