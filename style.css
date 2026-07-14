@@ -1,0 +1,227 @@
+/* =========================================================
+   meow.craft.works 公式サイト 共通スタイル
+   クリーン / ミニマル / 事業者としての信頼感を最優先
+   ========================================================= */
+
+:root {
+  /* アクセント：落ち着いた藍色（猫モチーフを控えめに） */
+  --accent: #4a5b8c;
+  --accent-dark: #37456b;
+  --text: #1f2430;
+  --text-muted: #5b6270;
+  --bg: #ffffff;
+  --bg-soft: #f6f7f9;
+  --border: #e5e8ee;
+  --radius: 14px;
+  --maxw: 960px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.75;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ---------- ヘッダー ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  gap: 16px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand:hover { text-decoration: none; }
+.brand-cat { width: 34px; height: 34px; display: block; flex: 0 0 auto; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.brand-word { font-weight: 700; font-size: 1.15rem; letter-spacing: 0.02em; }
+.brand .cat { color: var(--accent); }
+.brand-kana {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  letter-spacing: 0.16em;
+  font-weight: 500;
+}
+.nav a {
+  color: var(--text-muted);
+  margin-left: 20px;
+  font-size: 0.95rem;
+}
+.nav a:hover { color: var(--accent); text-decoration: none; }
+
+/* ---------- ヒーロー ---------- */
+.hero {
+  background: linear-gradient(180deg, var(--bg-soft), #fff);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  padding: 72px 20px 64px;
+}
+.hero-cat { width: 88px; height: 88px; display: block; margin: 0 auto 16px; }
+.hero h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  letter-spacing: 0.01em;
+}
+.hero .kana {
+  margin: 0 0 16px;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  font-size: 0.95rem;
+}
+.hero .lead-ja { font-size: 1.1rem; margin: 0 0 4px; }
+.hero .lead-en { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
+
+/* ---------- セクション ---------- */
+section { padding: 56px 0; }
+section h2 {
+  font-size: 1.4rem;
+  margin: 0 0 6px;
+  letter-spacing: 0.02em;
+}
+section .section-sub {
+  color: var(--text-muted);
+  margin: 0 0 28px;
+  font-size: 0.9rem;
+}
+.section-soft { background: var(--bg-soft); }
+
+/* ---------- アプリカード ---------- */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.app-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.app-card__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.app-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 15px; /* iOS 風の角丸 */
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+.app-card__title { margin: 0; font-size: 1.1rem; }
+.app-card__cat {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.app-card__desc {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+  flex: 1;
+}
+.appstore-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  background: #000;
+  color: #fff;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.appstore-badge:hover { text-decoration: none; opacity: 0.88; }
+
+/* ---------- 事業者情報 ---------- */
+.about-table {
+  width: 100%;
+  border-collapse: collapse;
+  max-width: 640px;
+}
+.about-table th,
+.about-table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  font-size: 0.95rem;
+}
+.about-table th {
+  width: 34%;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- 汎用：本文ページ ---------- */
+.page {
+  padding: 48px 0 64px;
+}
+.page h1 { font-size: 1.6rem; margin: 0 0 8px; }
+.page .updated { color: var(--text-muted); font-size: 0.85rem; margin: 0 0 32px; }
+.page h2 { font-size: 1.15rem; margin: 32px 0 8px; }
+.page p, .page li { font-size: 0.97rem; }
+.page ul { padding-left: 1.2em; }
+.back-link { display: inline-block; margin-top: 32px; font-size: 0.9rem; }
+
+/* ---------- フッター ---------- */
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-soft);
+  padding: 40px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.site-footer .foot-nav a { margin-right: 18px; }
+.site-footer .foot-nav { margin-bottom: 12px; }
+.site-footer .copy { margin: 0; }
+
+/* ---------- レスポンシブ ---------- */
+@media (max-width: 560px) {
+  .nav a { margin-left: 14px; font-size: 0.9rem; }
+  .site-header .container { min-height: 56px; }
+  section { padding: 44px 0; }
+  .hero { padding: 56px 16px 48px; }
+}

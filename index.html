@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>meow.craft.works ｜ iOS アプリ開発スタジオ</title>
+  <meta name="description" content="meow.craft.works は日本の個人 iOS アプリ開発スタジオです。家計簿・筋トレ記録などのアプリを企画・開発・運営しています。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== ヘッダー ========== -->
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <img class="brand-cat" src="assets/logo.png" alt="" />
+        <span class="brand-text">
+          <span class="brand-word"><span class="cat">meow</span>.craft.works</span>
+          <span class="brand-kana">ニャークラフトワークス</span>
+        </span>
+      </a>
+      <nav class="nav">
+        <a href="#apps">アプリ</a>
+        <a href="support.html">サポート</a>
+        <a href="privacy.html">プライバシー</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== ヒーロー ========== -->
+  <section class="hero">
+    <div class="container">
+      <img class="hero-cat" src="assets/logo.png" alt="meow.craft.works の黒猫ロゴ" />
+      <h1>meow.craft.works</h1>
+      <p class="kana">ニャークラフトワークス</p>
+      <p class="lead-ja">iOS アプリをつくっている、日本の個人開発スタジオです。</p>
+      <p class="lead-en">An independent iOS app studio based in Japan.</p>
+    </div>
+  </section>
+
+  <!-- ========== アプリ一覧 ========== -->
+  <section id="apps" class="section-soft">
+    <div class="container">
+      <h2>アプリ / Our Apps</h2>
+      <p class="section-sub">App Store で公開しているアプリです。</p>
+
+      <div class="app-grid">
+
+        <!-- ▼▼ アプリカード（この <article> ブロックを丸ごとコピーすれば増やせます） ▼▼ -->
+        <!-- アプリ① くらしの収支 -->
+        <article class="app-card">
+          <div class="app-card__head">
+            <!-- TODO(差し替え): assets/ にアイコン画像を置き、src を差し替え -->
+            <img class="app-icon" src="assets/app-kakeibo.png" alt="くらしの収支 アイコン"
+                 onerror="this.style.visibility='hidden'" />
+            <div>
+              <h3 class="app-card__title">くらしの収支</h3>
+              <p class="app-card__cat">ファイナンス / 家計簿</p>
+            </div>
+          </div>
+          <p class="app-card__desc">
+            収入と支出をシンプルに記録できる家計簿アプリ。余計な機能をそぎ落とし、
+            毎日の入力が続けられることを最優先に設計しました。
+          </p>
+          <!-- TODO(差し替え): 実際の App Store URL に変更 -->
+          <a class="appstore-badge" href="[App Store URL]" target="_blank" rel="noopener">
+             App Store で見る</a>
+        </article>
+
+        <!-- アプリ② 筋トレウォッチ -->
+        <article class="app-card">
+          <div class="app-card__head">
+            <!-- TODO(差し替え): assets/ にアイコン画像を置き、src を差し替え -->
+            <img class="app-icon" src="assets/app-kintore.png" alt="筋トレウォッチ アイコン"
+                 onerror="this.style.visibility='hidden'" />
+            <div>
+              <h3 class="app-card__title">筋トレウォッチ</h3>
+              <p class="app-card__cat">ヘルスケア / フィットネス</p>
+            </div>
+          </div>
+          <p class="app-card__desc">
+            筋トレの記録とインターバルタイマーをひとつにまとめたトレーニング支援アプリ。
+            セット管理と休憩タイマーで、トレーニングのテンポを崩さずに集中できます。
+          </p>
+          <!-- TODO(差し替え): 実際の App Store URL に変更 -->
+          <a class="appstore-badge" href="[App Store URL]" target="_blank" rel="noopener">
+             App Store で見る</a>
+        </article>
+        <!-- ▲▲ アプリカードここまで ▲▲ -->
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 事業者情報 ========== -->
+  <section id="about">
+    <div class="container">
+      <h2>事業者情報 / About</h2>
+      <p class="section-sub">iOS アプリケーションの企画・開発・運営</p>
+
+      <table class="about-table">
+        <tbody>
+          <tr>
+            <th>屋号 / Business name</th>
+            <td>meow.craft.works（ニャークラフトワークス）</td>
+          </tr>
+          <tr>
+            <th>事業内容 / Business</th>
+            <td>iOS アプリケーションの企画・開発・運営<br />
+              <span style="color:var(--text-muted)">Planning, development &amp; operation of iOS applications</span></td>
+          </tr>
+          <!-- 代表者名：公開可否は本人判断。非公開にする場合はこの <tr> を削除 -->
+          <tr>
+            <th>代表者 / Representative</th>
+            <td><!-- TODO(差し替え/非表示可) -->Sana Okada</td>
+          </tr>
+          <tr>
+            <th>所在地 / Location</th>
+            <td><!-- TODO(差し替え): 都道府県までに留める運用も可 -->日本 / Japan</td>
+          </tr>
+          <tr>
+            <th>連絡先 / Contact</th>
+            <!-- TODO(差し替え): 独自ドメインのメールに変更 -->
+            <td><a href="mailto:contact@meowcraftworks.com">contact@meowcraftworks.com</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== フッター ========== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="foot-nav">
+        <a href="index.html">ホーム</a>
+        <a href="privacy.html">プライバシーポリシー</a>
+        <a href="terms.html">利用規約</a>
+        <a href="support.html">サポート</a>
+        <a href="mailto:contact@meowcraftworks.com">お問い合わせ</a>
+      </div>
+      <p class="copy">© 2026 meow.craft.works</p>
+    </div>
+  </footer>
+
+</body>
+</html>
