@@ -199,6 +199,8 @@ hr { border: none; border-top: 1px solid var(--line); margin: 8px 0; }
 
 .note { color: var(--muted); font-size: .72rem; text-align: center; margin: 10px 0 0; }
 .hint { color: var(--muted); font-size: .7rem; line-height: 1.5; margin: 2px 0 0; }
+.hint.status:empty { display: none; }
+.hint.status { color: var(--accent); }
 
 /* ---------- サイト内ページ用 ---------- */
 .app-footer {

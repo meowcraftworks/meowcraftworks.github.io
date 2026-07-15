@@ -83,22 +83,25 @@
 
         <div class="row">
           <span class="lbl">背景を抜く</span>
-          <label class="switch">
-            <input type="checkbox" id="cutOn" checked>
-            <span class="slider-sw"></span>
-          </label>
+          <select id="cutMode" class="grow">
+            <option value="ai">AI（高精度・推奨）</option>
+            <option value="color">色で抜く（速い）</option>
+            <option value="off">抜かない</option>
+          </select>
         </div>
-        <div class="row">
+        <p id="aiStatus" class="hint status"></p>
+        <div class="row color-only">
           <span class="lbl">しきい値</span>
           <input type="range" id="cutTol" min="0.02" max="0.6" step="0.01" value="0.18">
           <output id="cutTolo">18%</output>
         </div>
-        <div class="row">
+        <div class="row color-only">
           <span class="lbl">縁のなじみ</span>
           <input type="range" id="cutSoft" min="0" max="4" step="1" value="1">
           <output id="cutSofto">1px</output>
         </div>
-        <p class="hint">背景が単色に近い写真ほどきれいに抜けます。うまく抜けない時はしきい値を調整してください。</p>
+        <p class="hint color-only">背景が単色に近い写真ほどきれいに抜けます。うまく抜けない時はしきい値を調整してください。</p>
+        <p class="hint ai-only">初回だけAIの読み込みに約7MBかかります（2回目以降はキャッシュされます）。処理は端末内で完結し、画像は外部に送信されません。</p>
 
         <hr>
 

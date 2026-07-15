@@ -33,8 +33,16 @@ const ctl = {
   opacity: $('opacity'), feather: $('feather'), maskCy: $('maskCy'),
   maskAspect: $('maskAspect'), blendMode: $('blendMode'),
   glowOn: $('glowOn'), glowStrength: $('glowStrength'),
-  cutOn: $('cutOn'), cutTol: $('cutTol'), cutSoft: $('cutSoft'),
+  cutMode: $('cutMode'), cutTol: $('cutTol'), cutSoft: $('cutSoft'),
 };
+
+/* モードに関係のない操作は隠す */
+function applyCutModeUI(mode) {
+  document.querySelectorAll('.color-only').forEach(el =>
+    el.style.display = mode === 'color' ? '' : 'none');
+  document.querySelectorAll('.ai-only').forEach(el =>
+    el.style.display = mode === 'ai' ? '' : 'none');
+}
 
 /* =========================================================
    画像読み込み
@@ -86,12 +94,13 @@ async function addOverlay(file) {
     // 背景を切り抜いてあるので、既定は猫本来の色が出る Normal にする。
     blendMode: 'source-over',
     feather: 0.15, maskCy: 0.45, maskAspect: 1.25,
-    cutout: { enabled: true, tolerance: 0.18, edgeSoften: 1 },
+    cutout: { mode: 'ai', tolerance: 0.18, edgeSoften: 1 },
     glow: { enabled: true, strength: 0.18 },
     zIndex: layers.length,
     id: ++uid,
     _masked: null, _dirty: true, _render: null,
     _cut: null, _cutDirty: true, _cutSize: 0, _cutMax: MASK_MAX,
+    _aiMask: null, _aiPending: false,
   };
   layers.push(layer);
   selected = layers.length - 1;
@@ -99,6 +108,7 @@ async function addOverlay(file) {
   rebuildLayerUI();
   syncControls();
   render();
+  if (layer.cutout.mode === 'ai') requestAiMask(layer);
 }
 
 /* =========================================================
@@ -118,6 +128,135 @@ function setupCanvasSize() {
    外部APIもライブラリも使わずに済む反面、背景が単色〜緩やかな
    グラデーションの写真に向く。
    ========================================================= */
+/* =========================================================
+   AI による背景切り抜き（U^2-Net / u2netp）
+   モデルは訪問者のブラウザ内で動く。サーバーにもAPIにも送らないので
+   実行回数がいくら増えても費用は発生しない。
+   同梱物のライセンスは ai/LICENSES.md を参照（u2netp: Apache-2.0 /
+   ONNX Runtime Web: MIT。いずれも商用利用可）。
+   ========================================================= */
+// ORT は wasm のグルーコードを動的 import するため、'ai/' のような相対指定だと
+// モジュール名とみなされて解決に失敗する。絶対URLにしておく。
+const AI_DIR = new URL('ai/', document.baseURI).href;
+const AI_SIZE = 320;                       // u2netp の入力解像度
+const AI_MEAN = [0.485, 0.456, 0.406];
+const AI_STD = [0.229, 0.224, 0.225];
+const ai = { session: null, loading: null };
+
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('script load failed: ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+function setAiStatus(msg) {
+  const el = $('aiStatus');
+  if (el) el.textContent = msg || '';
+}
+
+/* 初回だけ実行エンジンとモデルを読み込む（合計 約15MB） */
+function getAiSession() {
+  if (ai.session) return Promise.resolve(ai.session);
+  if (ai.loading) return ai.loading;
+  ai.loading = (async () => {
+    setAiStatus('AIを準備中…（初回のみ）');
+    await loadScriptOnce(AI_DIR + 'ort.wasm.min.js');
+    ort.env.wasm.wasmPaths = AI_DIR;
+    ort.env.wasm.numThreads = 1;   // クロスオリジン分離が無い環境では複数スレッドを使えない
+    ort.env.logLevel = 'error';
+
+    // 進捗を出したいので、モデルは自分で取得してから渡す
+    const resp = await fetch(AI_DIR + 'u2netp.onnx');
+    if (!resp.ok) throw new Error('model fetch failed: ' + resp.status);
+    const total = +resp.headers.get('content-length') || 0;
+    const reader = resp.body.getReader();
+    const chunks = [];
+    let received = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      setAiStatus(total
+        ? `AIモデルを読み込み中… ${Math.round(received / total * 100)}%`
+        : `AIモデルを読み込み中… ${(received / 1e6).toFixed(1)}MB`);
+    }
+    const buf = new Uint8Array(received);
+    let off = 0;
+    for (const ch of chunks) { buf.set(ch, off); off += ch.length; }
+
+    setAiStatus('AIを起動中…');
+    ai.session = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
+    setAiStatus('');
+    return ai.session;
+  })();
+  ai.loading.catch(() => { ai.loading = null; });
+  return ai.loading;
+}
+
+/* 画像1枚から被写体マスク(320x320)を作る。
+   マスクは解像度に依存しないので、プレビューにも書き出しにも使い回せる。 */
+async function computeAiMask(image) {
+  const session = await getAiSession();
+  const c = document.createElement('canvas');
+  c.width = AI_SIZE; c.height = AI_SIZE;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(image, 0, 0, AI_SIZE, AI_SIZE);
+  const im = g.getImageData(0, 0, AI_SIZE, AI_SIZE).data;
+
+  const n = AI_SIZE * AI_SIZE;
+  const f = new Float32Array(3 * n);
+  for (let i = 0; i < n; i++) {
+    f[i] = (im[i * 4] / 255 - AI_MEAN[0]) / AI_STD[0];
+    f[n + i] = (im[i * 4 + 1] / 255 - AI_MEAN[1]) / AI_STD[1];
+    f[2 * n + i] = (im[i * 4 + 2] / 255 - AI_MEAN[2]) / AI_STD[2];
+  }
+  const out = await session.run({
+    [session.inputNames[0]]: new ort.Tensor('float32', f, [1, 3, AI_SIZE, AI_SIZE]),
+  });
+  const d = out[session.outputNames[0]].data;   // 融合出力 d0
+
+  let mi = Infinity, ma = -Infinity;
+  for (let i = 0; i < d.length; i++) { if (d[i] < mi) mi = d[i]; if (d[i] > ma) ma = d[i]; }
+  const range = (ma - mi) || 1;
+
+  const mc = document.createElement('canvas');
+  mc.width = AI_SIZE; mc.height = AI_SIZE;
+  const mg = mc.getContext('2d');
+  const mid = mg.createImageData(AI_SIZE, AI_SIZE);
+  for (let i = 0; i < n; i++) {
+    mid.data[i * 4] = 255; mid.data[i * 4 + 1] = 255; mid.data[i * 4 + 2] = 255;
+    mid.data[i * 4 + 3] = ((d[i] - mi) / range) * 255;
+  }
+  mg.putImageData(mid, 0, 0);
+  return mc;
+}
+
+/* マスクができるまでは「色で抜く」方式で表示しておき、出来たら差し替える */
+function requestAiMask(layer) {
+  if (layer._aiMask || layer._aiPending) return;
+  layer._aiPending = true;
+  setAiStatus(ai.session ? 'AIで切り抜き中…' : 'AIを準備中…（初回のみ）');
+  computeAiMask(layer.image).then((mask) => {
+    layer._aiMask = mask;
+    layer._aiPending = false;
+    layer._cutDirty = true; layer._dirty = true;
+    setAiStatus('');
+    render();
+  }).catch((e) => {
+    layer._aiPending = false;
+    layer.cutout.mode = 'color';
+    setAiStatus('AIを読み込めませんでした。「色で抜く」に切り替えます。');
+    layer._cutDirty = true; layer._dirty = true;
+    syncControls();
+    render();
+  });
+}
+
 const MAX_REFS = 10;
 
 /* 色は YCbCr で比較する。輝度(Y)より色味(Cb,Cr)の差を重く見ることで、
@@ -193,6 +332,14 @@ function buildCutCanvas(layer, maxSize) {
   c.width = w; c.height = h;
   const g = c.getContext('2d', { willReadFrequently: true });
   g.drawImage(img, 0, 0, w, h);
+
+  // AIマスクがあれば、それを被せるだけで終わり（拡大は補間されるので縁も滑らか）
+  if (layer.cutout.mode === 'ai' && layer._aiMask) {
+    g.globalCompositeOperation = 'destination-in';
+    g.drawImage(layer._aiMask, 0, 0, w, h);
+    g.globalCompositeOperation = 'source-over';
+    return c;
+  }
 
   const id = g.getImageData(0, 0, w, h);
   const d = id.data;
@@ -325,7 +472,7 @@ function ensureCut(layer, maxSize) {
 }
 
 function sourceFor(layer, maxSize, isExport) {
-  if (!layer.cutout.enabled) return layer.image;
+  if (layer.cutout.mode === 'off') return layer.image;
   if (isExport) return buildCutCanvas(layer, Math.min(maxSize, CUT_EXPORT_MAX));
   return ensureCut(layer, Math.min(maxSize, layer._cutMax));
 }
@@ -749,7 +896,8 @@ function syncControls() {
   ctl.scale.value = l.scale; $('scaleo').textContent = l.scale.toFixed(2) + 'x';
   ctl.rotation.value = l.rotation; $('rotationo').textContent = Math.round(l.rotation) + '°';
   ctl.opacity.value = l.opacity; $('opacityo').textContent = Math.round(l.opacity * 100) + '%';
-  ctl.cutOn.checked = l.cutout.enabled;
+  ctl.cutMode.value = l.cutout.mode;
+  applyCutModeUI(l.cutout.mode);
   ctl.cutTol.value = l.cutout.tolerance; $('cutTolo').textContent = Math.round(l.cutout.tolerance * 100) + '%';
   ctl.cutSoft.value = l.cutout.edgeSoften; $('cutSofto').textContent = l.cutout.edgeSoften + 'px';
   ctl.feather.value = l.feather; $('feathero').textContent = Math.round(l.feather * 100) + '%';
@@ -787,9 +935,12 @@ ctl.opacity.addEventListener('input', () => withLayer(l => {
 }));
 
 /* 切り抜き: 再計算が重いのでドラッグ中は低解像度、指を離したら本解像度で作り直す */
-ctl.cutOn.addEventListener('change', () => withLayer(l => {
-  l.cutout.enabled = ctl.cutOn.checked;
+ctl.cutMode.addEventListener('change', () => withLayer(l => {
+  l.cutout.mode = ctl.cutMode.value;
+  applyCutModeUI(l.cutout.mode);
+  setAiStatus('');
   l._cutDirty = true;
+  if (l.cutout.mode === 'ai') requestAiMask(l);
 }, true));
 ctl.cutTol.addEventListener('input', () => withLayer(l => {
   l.cutout.tolerance = +ctl.cutTol.value;
