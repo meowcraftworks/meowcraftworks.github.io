@@ -118,13 +118,46 @@ function setupCanvasSize() {
    外部APIもライブラリも使わずに済む反面、背景が単色〜緩やかな
    グラデーションの写真に向く。
    ========================================================= */
-/* 四隅の小さなパッチの平均色を「背景の基準色」の候補にする。
-   被写体が四隅すべてを覆うことはまずないので、端に接した被写体を
-   背景と誤認しにくくなる。 */
-function cornerRefs(d, w, h) {
+const MAX_REFS = 10;
+
+/* 色は YCbCr で比較する。輝度(Y)より色味(Cb,Cr)の差を重く見ることで、
+   背景に影や明るさのムラがあっても同じ背景として扱えるようにする。
+   （Y を軽く見すぎると白い壁の前の灰色の猫まで消えるので 0.6 に留める）
+   基準色は [y,cb,cr, y,cb,cr, ...] と平坦に持ち、画素ごとの配列生成を避ける。 */
+const Y_W = 0.6, C_W = 1.6;
+const yOf = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
+const cbOf = (r, g, b) => -0.168736 * r - 0.331264 * g + 0.5 * b;
+const crOf = (r, g, b) => 0.5 * r - 0.418688 * g - 0.081312 * b;
+
+/* 最も近い基準色との距離（二乗）。これが小さいほど背景らしい。 */
+function nearestRefDist2(refs, y, cb, cr) {
+  let best = Infinity;
+  for (let k = 0; k < refs.length; k += 3) {
+    const dy = (y - refs[k]) * Y_W;
+    const dcb = (cb - refs[k + 1]) * C_W;
+    const dcr = (cr - refs[k + 2]) * C_W;
+    const v = dy * dy + dcb * dcb + dcr * dcr;
+    if (v < best) best = v;
+  }
+  return best;
+}
+
+/* 背景の基準色を集める。
+   1. 四隅のパッチ（被写体が四隅すべてを覆うことはまずないので背景とみなせる）
+   2. 端を一周し、既知の基準色に近い端ピクセルの色を基準に追加していく
+      → 背景がグラデーションでも端沿いに基準が伸びるので追従できる。
+      被写体の色は既知の基準から遠いため、連鎖に混ざらない。 */
+function backgroundRefs(d, w, h, tolOut2) {
+  const refs = [];
+  const addRef = (y, cb, cr) => {
+    if (refs.length >= MAX_REFS * 3) return;
+    // 既存とほぼ同じ色ならまとめる（基準が増えすぎると重くなるため）
+    if (nearestRefDist2(refs, y, cb, cr) < tolOut2 * 0.36) return;
+    refs.push(y, cb, cr);
+  };
+
   const p = Math.max(2, Math.round(Math.min(w, h) * 0.04));
-  const spots = [[0, 0], [w - p, 0], [0, h - p], [w - p, h - p]];
-  return spots.map(([ox, oy]) => {
+  for (const [ox, oy] of [[0, 0], [w - p, 0], [0, h - p], [w - p, h - p]]) {
     let r = 0, g = 0, b = 0, n = 0;
     for (let y = oy; y < oy + p; y++) {
       for (let x = ox; x < ox + p; x++) {
@@ -132,16 +165,21 @@ function cornerRefs(d, w, h) {
         r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
       }
     }
-    return [r / n, g / n, b / n];
-  });
-}
-
-function nearRef(refs, r, g, b, tol2) {
-  for (let k = 0; k < refs.length; k++) {
-    const dr = r - refs[k][0], dg = g - refs[k][1], db = b - refs[k][2];
-    if (dr * dr + dg * dg + db * db <= tol2) return true;
+    r /= n; g /= n; b /= n;
+    addRef(yOf(r, g, b), cbOf(r, g, b), crOf(r, g, b));
   }
-  return false;
+
+  const step = Math.max(1, Math.round(Math.min(w, h) / 200));
+  const border = [];
+  for (let x = 0; x < w; x += step) border.push(x, (h - 1) * w + x);
+  for (let y = 0; y < h; y += step) border.push(y * w, y * w + w - 1);
+  for (const p2 of border) {
+    const i = p2 * 4;
+    const r = d[i], g = d[i + 1], b = d[i + 2];
+    const y = yOf(r, g, b), cb = cbOf(r, g, b), cr = crOf(r, g, b);
+    if (nearestRefDist2(refs, y, cb, cr) <= tolOut2) addRef(y, cb, cr);
+  }
+  return refs;
 }
 
 function buildCutCanvas(layer, maxSize) {
@@ -159,13 +197,18 @@ function buildCutCanvas(layer, maxSize) {
   const id = g.getImageData(0, 0, w, h);
   const d = id.data;
   const n = w * h;
-  const tol = layer.cutout.tolerance * 255;
-  const tol2 = tol * tol * 3;               // 二乗距離で比較（sqrt を避ける）
+
+  // tolOut までを背景として塗り広げ、tolIn 以内は完全な背景、
+  // その間は距離に応じた半透明にする（毛やアンチエイリアスの縁が滑らかになる）
+  const tolOut = layer.cutout.tolerance * 255;
+  const tolIn = tolOut * 0.55;
+  const tolOut2 = tolOut * tolOut;
+  const band = Math.max(1e-6, tolOut - tolIn);
 
   const visited = new Uint8Array(n);
   const stack = new Int32Array(n);           // 各ピクセルは高々1回しか積まれない
 
-  const refs = cornerRefs(d, w, h);
+  const refs = backgroundRefs(d, w, h, tolOut2);
 
   // 四辺のピクセルを種にする
   const seeds = [];
@@ -174,21 +217,25 @@ function buildCutCanvas(layer, maxSize) {
 
   for (const seed of seeds) {
     if (visited[seed]) continue;
-    // 連結成分ごとに種ピクセルの色を基準にする（背景が複数色でも対応できる）
     const si = seed * 4;
     const sr = d[si], sg = d[si + 1], sb = d[si + 2];
     // 背景の基準色から外れた端のピクセル = 画面の端に接した被写体。
     // ここから塗り始めると猫の内部へ侵入して顔まで消えるので種にしない。
-    if (!nearRef(refs, sr, sg, sb, tol2)) continue;
+    if (nearestRefDist2(refs, yOf(sr, sg, sb), cbOf(sr, sg, sb), crOf(sr, sg, sb)) > tolOut2) continue;
     let sp = 0;
     stack[sp++] = seed;
     visited[seed] = 1;
     while (sp > 0) {
       const p = stack[--sp];
       const i = p * 4;
-      const dr = d[i] - sr, dg = d[i + 1] - sg, db = d[i + 2] - sb;
-      if (dr * dr + dg * dg + db * db > tol2) continue; // 被写体側 → ここで止める
-      d[i + 3] = 0;
+      // 集めた基準色のどれかに近ければ背景。1色だけを基準にするより
+      // グラデーションや複数色の背景に追従できる。
+      const r = d[i], g2 = d[i + 1], b = d[i + 2];
+      const d2 = nearestRefDist2(refs, yOf(r, g2, b), cbOf(r, g2, b), crOf(r, g2, b));
+      if (d2 > tolOut2) continue;            // 被写体側 → ここで止める
+      const dd = Math.sqrt(d2);
+      const a = dd <= tolIn ? 0 : ((dd - tolIn) / band) * 255;
+      if (a < d[i + 3]) d[i + 3] = a;
       const x = p % w, y = (p / w) | 0;
       if (x > 0 && !visited[p - 1]) { visited[p - 1] = 1; stack[sp++] = p - 1; }
       if (x < w - 1 && !visited[p + 1]) { visited[p + 1] = 1; stack[sp++] = p + 1; }
@@ -197,10 +244,47 @@ function buildCutCanvas(layer, maxSize) {
     }
   }
 
+  removeStrayIslands(d, w, h);
+
   const soften = layer.cutout.edgeSoften | 0;
   if (soften > 0) blurAlpha(d, w, h, soften);
   g.putImageData(id, 0, 0);
   return c;
+}
+
+/* 背景を消した後に浮いて残る小さな島（地面の影、色の濃いゴミなど）を消す。
+   被写体より十分小さい塊だけを対象にするので、猫が2匹写っていても両方残る。 */
+function removeStrayIslands(d, w, h) {
+  const n = w * h;
+  const label = new Int32Array(n).fill(-1);
+  const stack = new Int32Array(n);
+  const sizes = [];
+  const solid = (p) => d[p * 4 + 3] > 32;
+
+  for (let s = 0; s < n; s++) {
+    if (label[s] !== -1 || !solid(s)) continue;
+    const id = sizes.length;
+    let size = 0, sp = 0;
+    stack[sp++] = s; label[s] = id;
+    while (sp > 0) {
+      const p = stack[--sp];
+      size++;
+      const x = p % w, y = (p / w) | 0;
+      if (x > 0 && label[p - 1] === -1 && solid(p - 1)) { label[p - 1] = id; stack[sp++] = p - 1; }
+      if (x < w - 1 && label[p + 1] === -1 && solid(p + 1)) { label[p + 1] = id; stack[sp++] = p + 1; }
+      if (y > 0 && label[p - w] === -1 && solid(p - w)) { label[p - w] = id; stack[sp++] = p - w; }
+      if (y < h - 1 && label[p + w] === -1 && solid(p + w)) { label[p + w] = id; stack[sp++] = p + w; }
+    }
+    sizes.push(size);
+  }
+  if (sizes.length < 2) return;
+
+  const largest = Math.max(...sizes);
+  const keep = largest * 0.25;
+  for (let p = 0; p < n; p++) {
+    const id = label[p];
+    if (id !== -1 && sizes[id] < keep) d[p * 4 + 3] = 0;
+  }
 }
 
 /* アルファチャンネルだけをボックスブラー（切り抜きのギザギザを馴染ませる） */
