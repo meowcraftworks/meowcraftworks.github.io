@@ -203,9 +203,31 @@ section .section-sub {
 .page h1 { font-size: 1.6rem; margin: 0 0 8px; }
 .page .updated { color: var(--text-muted); font-size: 0.85rem; margin: 0 0 32px; }
 .page h2 { font-size: 1.15rem; margin: 32px 0 8px; }
+.page h3 { font-size: 1rem; margin: 22px 0 6px; color: var(--text); }
 .page p, .page li { font-size: 0.97rem; }
 .page ul { padding-left: 1.2em; }
 .back-link { display: inline-block; margin-top: 32px; font-size: 0.9rem; }
+
+/* ---------- 法務ページの表（外部送信一覧など） ---------- */
+.table-scroll { overflow-x: auto; margin: 16px 0 8px; }
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.legal-table th,
+.legal-table td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.legal-table th {
+  background: var(--bg-soft);
+  font-weight: 600;
+  white-space: nowrap;
+}
 
 /* ---------- フッター ---------- */
 .site-footer {
@@ -245,5 +267,32 @@ section .section-sub {
   .about-table td {
     padding: 2px 0 14px;
     border-bottom: 1px solid var(--border);
+  }
+
+  /* 外部送信一覧：横スクロールさせず、1行を1枚のカードとして積む */
+  .table-scroll { overflow-x: visible; }
+  .legal-table thead { display: none; }
+  .legal-table,
+  .legal-table tbody { display: block; width: 100%; }
+  .legal-table tr {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    background: #fff;
+  }
+  .legal-table td {
+    display: block;
+    border: none;
+    padding: 6px 0;
+  }
+  .legal-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 2px;
   }
 }
