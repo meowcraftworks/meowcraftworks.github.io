@@ -187,6 +187,7 @@ section .section-sub {
   border-bottom: 1px solid var(--border);
   vertical-align: top;
   font-size: 0.95rem;
+  overflow-wrap: anywhere; /* 長いメールアドレスで横に溢れさせない */
 }
 .about-table th {
   width: 34%;
@@ -224,4 +225,25 @@ section .section-sub {
   .site-header .container { min-height: 56px; }
   section { padding: 44px 0; }
   .hero { padding: 56px 16px 48px; }
+
+  /* 事業者情報：横スクロールさせないため、見出しと内容を縦に積む */
+  .about-table,
+  .about-table tbody,
+  .about-table tr { display: block; width: 100%; }
+  .about-table th,
+  .about-table td {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    padding: 0;
+    border-bottom: none;
+  }
+  .about-table th {
+    font-size: 0.8rem;
+    padding-top: 14px;
+  }
+  .about-table td {
+    padding: 2px 0 14px;
+    border-bottom: 1px solid var(--border);
+  }
 }

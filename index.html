@@ -19,12 +19,6 @@
           <span class="brand-kana">ニャークラフトワークス</span>
         </span>
       </a>
-      <nav class="nav">
-        <a href="#apps">アプリ</a>
-        <a href="https://nyanoverlay.meowcraftworks.com/">にゃんOverlay</a>
-        <a href="support.html">サポート</a>
-        <a href="privacy.html">プライバシー</a>
-      </nav>
     </div>
   </header>
 
@@ -42,7 +36,7 @@
   <!-- ========== アプリ一覧 ========== -->
   <section id="apps" class="section-soft">
     <div class="container">
-      <h2>アプリ / Our Apps</h2>
+      <h2>iOS アプリ / iOS Apps</h2>
       <p class="section-sub">App Store で公開しているアプリです。</p>
 
       <div class="app-grid">
@@ -51,7 +45,6 @@
         <!-- アプリ① くらしの収支 -->
         <article class="app-card">
           <div class="app-card__head">
-            <!-- TODO(差し替え): assets/ にアイコン画像を置き、src を差し替え -->
             <img class="app-icon" src="assets/app-kakeibo.png" alt="くらしの収支 アイコン"
                  onerror="this.style.visibility='hidden'" />
             <div>
@@ -63,15 +56,13 @@
             収入と支出をシンプルに記録できる家計簿アプリ。余計な機能をそぎ落とし、
             毎日の入力が続けられることを最優先に設計しました。
           </p>
-          <!-- TODO(差し替え): 実際の App Store URL に変更 -->
-          <a class="appstore-badge" href="[App Store URL]" target="_blank" rel="noopener">
+          <a class="appstore-badge" href="https://apps.apple.com/jp/app/id6787362400" target="_blank" rel="noopener">
              App Store で見る</a>
         </article>
 
         <!-- アプリ② 筋トレウォッチ -->
         <article class="app-card">
           <div class="app-card__head">
-            <!-- TODO(差し替え): assets/ にアイコン画像を置き、src を差し替え -->
             <img class="app-icon" src="assets/app-kintore.png" alt="筋トレウォッチ アイコン"
                  onerror="this.style.visibility='hidden'" />
             <div>
@@ -83,35 +74,44 @@
             筋トレの記録とインターバルタイマーをひとつにまとめたトレーニング支援アプリ。
             セット管理と休憩タイマーで、トレーニングのテンポを崩さずに集中できます。
           </p>
-          <!-- TODO(差し替え): 実際の App Store URL に変更 -->
-          <a class="appstore-badge" href="[App Store URL]" target="_blank" rel="noopener">
+          <a class="appstore-badge" href="https://apps.apple.com/jp/app/id6787971685" target="_blank" rel="noopener">
              App Store で見る</a>
         </article>
         <!-- ▲▲ アプリカードここまで ▲▲ -->
 
-        <!-- Webアプリ にゃんOverlay -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Webアプリ ========== -->
+  <section id="webapps">
+    <div class="container">
+      <h2>Webアプリ / Web App</h2>
+      <p class="section-sub">インストール不要、ブラウザだけで使えるアプリです。</p>
+
+      <div class="app-grid">
         <article class="app-card">
           <div class="app-card__head">
             <img class="app-icon" src="assets/logo.png" alt="にゃんOverlay アイコン"
                  onerror="this.style.visibility='hidden'" />
             <div>
               <h3 class="app-card__title">にゃんOverlay</h3>
-              <p class="app-card__cat">Webアプリ / 写真加工</p>
+              <p class="app-card__cat">写真加工 / Webアプリ</p>
             </div>
           </div>
           <p class="app-card__desc">
             背景写真に猫の顔を二重露光風に透かして合成できるWebアプリ。
             いつでも脳裏にキャットあり。インストール不要、ブラウザだけで動きます。
           </p>
-          <a class="appstore-badge" href="https://nyanoverlay.meowcraftworks.com/">ブラウザで使ってみる</a>
+          <a class="appstore-badge" href="https://nyanoverlay.meowcraftworks.com/" target="_blank" rel="noopener">
+            ブラウザで使ってみる</a>
         </article>
-
       </div>
     </div>
   </section>
 
   <!-- ========== 事業者情報 ========== -->
-  <section id="about">
+  <section id="about" class="section-soft">
     <div class="container">
       <h2>事業者情報 / About</h2>
       <p class="section-sub">iOS アプリケーションの企画・開発・運営</p>
@@ -134,11 +134,12 @@
           </tr>
           <tr>
             <th>所在地 / Location</th>
-            <td><!-- TODO(差し替え): 都道府県までに留める運用も可 -->日本 / Japan</td>
+            <!-- 番地は非公開。区までの記載に留めています -->
+            <td>日本 北海道 札幌市東区<br />
+              <span style="color:var(--text-muted)">Higashi-ku, Sapporo, Hokkaido, Japan</span></td>
           </tr>
           <tr>
             <th>連絡先 / Contact</th>
-            <!-- TODO(差し替え): 独自ドメインのメールに変更 -->
             <td><a href="mailto:contact@meowcraftworks.com">contact@meowcraftworks.com</a></td>
           </tr>
         </tbody>
